@@ -1,9 +1,9 @@
 {
-    "sketch": "/home/pi/Arduino/nbiot-e2e/device",
-    "logDir": "/home/pi/log",
+    "sketch": "/home/e2e/Arduino/nbiot-e2e/device",
+    "logDir": "/home/e2e/log",
     "gitDirs": [
-        "/home/pi/Arduino/nbiot-e2e",
-        "/home/pi/Arduino/libraries/ArduinoNBIoT"
+        "/home/e2e/Arduino/nbiot-e2e",
+        "/home/e2e/Arduino/libraries/ArduinoNBIoT"
     ],
     "boards": [
         {

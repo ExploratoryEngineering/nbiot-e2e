@@ -3,14 +3,14 @@ Description=Arduino Service
 After=network.target
 
 [Service]
-Environment="PATH=/usr/local/go/bin:/home/pi/go/bin"
-ExecStart=/home/pi/Arduino/nbiot-e2e/arduino-service/arduino-service
-WorkingDirectory=/home/pi/Arduino/nbiot-e2e/arduino-service
+Environment="PATH=/usr/local/go/bin:/home/e2e/go/bin"
+ExecStart=/home/e2e/Arduino/nbiot-e2e/arduino-service/arduino-service
+WorkingDirectory=/home/e2e/Arduino/nbiot-e2e/arduino-service
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
 RestartSec=5
-User=pi
+User=e2e
 
 [Install]
 WantedBy=multi-user.target
