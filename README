@@ -28,6 +28,7 @@ These tools enable automatic firmware updates on devices that periodically send 
 1. Generate a new AWS SSM activation: `aws ssm create-activation --default-instance-name nbiot-e2e-pi --iam-role nbiot-e2e-pi --registration-limit 1 --region eu-west-1`
 1. Generate a new AWS IAM access key: `aws iam create-access-key --user-name nbiot-e2e-pi`
 1. Create a [GitHub personal access token](https://github.com/settings/tokens/new) with «repo - Full control of private repositories» checked
+    1. This will only be used once, to add the pi's public ssh key as a deploy key to nbiot-e2e on GitHub Enterprise. This gives the pi access to clone and pull updates without using a persons ssh key.
 1. cd _nbiot-e2e_/scripts
 1. Replace the hostname number with the next unused number and insert keys (takes ~20 minutes)
     
@@ -36,6 +37,7 @@ These tools enable automatic firmware updates on devices that periodically send 
     SSM_ACT_ID=_AWS activation ID_  \
     AWS_ACCESS_KEY=_AWS access key_ \
     AWS_SECRET_KEY=_AWS secret key_ \
+    GHE_TOKEN=_GitHub Enterprise Personal Access token_ \
     ENABLE_ARDUINO=0 \
     bash -s --" < setup_rpi.sh
     
