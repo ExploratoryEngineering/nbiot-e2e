@@ -66,7 +66,6 @@ sudo sed -i -e "s/\/\/ Unattended-Upgrade::SyslogEnable \"false\";/Unattended-Up
 echo "install aws cli"
 echo "export PATH=~/.local/bin:\$PATH" >> ~/.profile
 export PATH=/usr/bin:~/.local/bin:$PATH
-ls -lap /usr/bin/pip
 pip3 install awscli --upgrade --user
 aws configure set aws_access_key_id ${AWS_ACCESS_KEY}
 aws configure set aws_secret_access_key ${AWS_SECRET_KEY}
