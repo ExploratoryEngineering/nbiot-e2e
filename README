@@ -18,7 +18,7 @@ These tools enable automatic firmware updates on devices that periodically send 
 
 ### Install steps
 
-1. Download latest [Raspbian lite](https://downloads.raspberrypi.org/raspbian_lite_latest) and burn to the microSD card using [Etcher](https://www.balena.io/etcher/)
+1. Download latest [Raspbian Stretch Lite](https://downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2018-11-15/2018-11-13-raspbian-stretch-lite.zip) and burn to the microSD card using [Etcher](https://www.balena.io/etcher/)
 1. Mount the SD card and create an empty file called _ssh_ to enable SSH access
 1. If the pi will use and Arduino UNO with EE-NBIOT-01, connect it to one of the pi's USB ports
     1. NB! Make sure you use `ENABLE_ARDUINO=1` when running the `setup_rpi.sh` script later.
