@@ -132,6 +132,11 @@ sudo sed -i -e "s/15min/30s/" /lib/systemd/system/amazon-ssm-agent.service
 sudo systemctl daemon-reload
 sudo service amazon-ssm-agent start
 
+echo "add ssm tags to instance"
+INSTANCE_ID=`aws ssm describe-instance-information --region "${AWS_REGION}" | jq -r '.InstanceInformationList[] | select(.ComputerName == "'"${NEWHOSTNAME}"'") | .InstanceId'`
+echo "self instance id: ${INSTANCE_ID}"
+aws ssm add-tags-to-resource --resource-type ManagedInstance --resource-id="${INSTANCE_ID}" --tags '[{"Key":"Name","Value":"'"${NEWHOSTNAME}"'"},{"Key":"Collection","Value":"nbiot-e2e-pi"}]' --region "${AWS_REGION}"
+
 echo "install go"
 wget -qO "/tmp/go${GO_VERSION}.tar.gz" https://dl.google.com/go/go${GO_VERSION}.tar.gz
 sudo tar -C /usr/local -xzf "/tmp/go${GO_VERSION}.tar.gz"
