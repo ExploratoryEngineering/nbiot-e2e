@@ -5,6 +5,7 @@ set -euf -o pipefail
 export NEWHOSTNAME=${NEWHOSTNAME:=nbiot-e2e}
 export TIMEZONE=${TIMEZONE:=Europe/Oslo}
 export GO_VERSION=${GO_VERSION:=1.11.4.linux-armv6l}
+export ENABLE_ARDUINO=${ENABLE_ARDUINO:=0}
 
 export AWS_REGION=${AWS_REGION:=eu-west-1}
 : ${SSM_ACT_CODE:?"SSM_ACT_CODE needs to be set to an AWS activation code"}
@@ -196,12 +197,18 @@ sed -i -e "s/pi/e2e/" ~/.arduino-config.json
 echo "make log directory"
 mkdir ~/log
 
-echo "install the arduino-service as a systemd service that starts on boot"
+echo "install the arduino-service as a systemd service"
 sudo cp ~/Arduino/nbiot-e2e/arduino-service/arduino.service /etc/systemd/system/
 # TODO remove sed-line after PR merge
 sudo sed -i -e "s/pi/e2e/" /etc/systemd/system/arduino.service
-sudo systemctl start arduino.service
-sudo systemctl enable arduino.service
+
+if [ "$ENABLE_ARDUINO" = "1" ]; then
+    echo "enable and start arduino service"
+    sudo systemctl start arduino.service
+    sudo systemctl enable arduino.service
+else
+    echo "arduino service disabled"
+fi
 
 echo "add scripts to crontab that poll git repos for changes"
 # https://stackoverflow.com/questions/610839/how-can-i-programmatically-create-a-new-cron-job
