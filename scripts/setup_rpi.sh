@@ -126,7 +126,7 @@ sudo tee /etc/amazon/ssm/seelog.xml <<EOL
 </seelog>
 EOL
 
-sudo amazon-ssm-agent -register -code "${SSM_ACT_CODE}" -id "${SSM_ACT_ID}" -region "eu-west-1"
+sudo amazon-ssm-agent -register -code "${SSM_ACT_CODE}" -id "${SSM_ACT_ID}" -region "${AWS_REGION}"
 sudo sed -i -e "s/on-failure/always/" /lib/systemd/system/amazon-ssm-agent.service
 sudo sed -i -e "s/15min/30s/" /lib/systemd/system/amazon-ssm-agent.service
 sudo systemctl daemon-reload
