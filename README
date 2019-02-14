@@ -63,10 +63,23 @@ The pi should now be up and running the end to end test.
 
 The pi's are connected to AWS Systems Manager, so we can use Systems Manager to remotely execute scripts on a pi.
 
+### Run single command on a nbiot-e2e pi
+
+1. `cd scripts/remote`
 1. List the managed instances: `aws ssm describe-instance-information`
 1. Copy the instance ID of the pi you want to connect to
-1. cd _nbiot-e2e_/scripts/remote
-1. INSTANCE_ID=_managed instance id_ ./exec.sh "echo This command will run on the pi and output the result"
+1. `INSTANCE_ID=_managed instance id_ ./exec.sh "echo This command will run on the pi, wait for execution to finish and output the response"`
+
+### Run single command on all the nbiot-e2e pis'
+
+`exec-all.sh` executes the arguments on all the nbiot-e2e pis' and send the
+responses to the SSM-RunCommand-Output log stream in Cloud Watch. It then
+checks the Cloud Watch logs every second and prints the output.
+
+1. `cd scripts/remote`
+1. `./exec-all.sh command`
+1. Wait for responses. Press <kbd>CTRL</kbd> + <kbd>C</kbd> to exit.
+
 
 ### SSH into the pi
 
