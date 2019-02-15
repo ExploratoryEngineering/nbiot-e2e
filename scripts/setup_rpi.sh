@@ -179,12 +179,12 @@ git clone https://github.com/ExploratoryEngineering/ArduinoNBIoT.git
 
 echo "add deployment key for nbiot-e2e"
 SSH_KEY=$(cat ~/.ssh/id_rsa.pub)
-curl -sS -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${GHE_TOKEN}" --data '{"title":"'"${NEWHOSTNAME}"'","read_only":"true","key":"'"${SSH_KEY}"'"}' https://ghe.telenordigital.com/api/v3/repos/telenordigital/nbiot-e2e/keys
+curl -sS -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${GHE_TOKEN}" --data '{"title":"'"${NEWHOSTNAME}"'","read_only":"true","key":"'"${SSH_KEY}"'"}' https://ghe.telenordigital.com/api/v3/repos/iot/nbiot-e2e/keys
 
 echo "download nbiot e2e project"
 cd ~/Arduino/
 ssh-keyscan ghe.telenordigital.com >> ~/.ssh/known_hosts
-git clone git@ghe.telenordigital.com:TelenorDigital/nbiot-e2e.git
+git clone git@ghe.telenordigital.com:IoT/nbiot-e2e.git
 
 echo "symlink the protobuf library into Arduino libraries"
 ln -s ~/Arduino/nbiot-e2e/pb/nanopb ~/Arduino/libraries
