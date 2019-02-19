@@ -221,6 +221,7 @@ echo "add scripts to crontab that poll git repos for changes"
 
 echo "install AWS CloudWatch agent"
 curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -o /tmp/awslogs-agent-setup.py
+# TODO move cloudwatch.conf to a file after PR merge
 sudo tee /tmp/cloudwatch.conf <<EOL
 #
 # ------------------------------------------

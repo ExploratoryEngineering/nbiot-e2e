@@ -15,10 +15,12 @@ while true; do
         echo "Waiting..."
         sleep 1
     elif [ $response_code = "0" ]; then
-        echo $(echo $response | jq -r '.StandardOutputContent')
+        echo STDOUT: $(echo $response | jq -r '.StandardOutputContent')
+        echo STDERR: $(echo $response | jq -r '.StandardErrorContent')
         break
     elif [ $status = "Failed" ]; then
-        echo $(echo $response | jq -r '.StandardErrorContent')
+        echo STDOUT: $(echo $response | jq -r '.StandardOutputContent')
+        echo STDERR: $(echo $response | jq -r '.StandardErrorContent')
         break
     else
         echo "Unknown status: $response_code"
