@@ -29,7 +29,7 @@ echo "Go version: ${GO_VERSION}"
 echo "change hostname"
 sudo sed -i -e "s/raspberrypi/${NEWHOSTNAME}/" /etc/hosts /etc/hostname
 
-echo "avoid restart to update mdns with new hostname"
+echo "update mdns with new hostname (to avoid restarting the pi)"
 sudo hostnamectl set-hostname "${NEWHOSTNAME}"
 sudo systemctl restart avahi-daemon
 
