@@ -184,7 +184,7 @@ curl -sS -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${
 echo "download nbiot e2e project"
 cd ~/Arduino/
 ssh-keyscan ghe.telenordigital.com >> ~/.ssh/known_hosts
-git clone git@ghe.telenordigital.com:IoT/nbiot-e2e.git
+git clone git@ghe.telenordigital.com:iot/nbiot-e2e.git
 
 echo "symlink the protobuf library into Arduino libraries"
 ln -s ~/Arduino/nbiot-e2e/pb/nanopb ~/Arduino/libraries
