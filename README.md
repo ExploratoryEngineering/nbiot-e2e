@@ -38,38 +38,15 @@ These tools enable automatic firmware updates on devices that periodically send 
                 psk="password"
             }
 
-1. If the pi will use and Arduino UNO with EE-NBIOT-01, connect it to one of the pi's USB ports
-
-    NB! Make sure you use `ENABLE_ARDUINO=1` when running the `setup_rpi.sh` script later.
-
 1. Connect the Raspberry PI using Ethernet and power up
-
-1. You might need to remove raspberrypi.local from ~/.ssh/known_hosts if you've ssh-ed a different pi with the same hostname before
-
-    If you don't want to manually edit known_hosts, you can install [thefuck](https://github.com/nvbn/thefuck). Then when you get the error: just type `fuck`, and it will remove the entry from `~/.ssh/known_hosts` for you and run the same command again.
 
 1. ssh pi@raspberrypi.local (password is raspberry)
 
-1. Generate a new AWS SSM activation: `aws ssm create-activation --default-instance-name nbiot-e2e-pi --iam-role nbiot-e2e-pi --registration-limit 1 --region eu-west-1`
-
-1. Generate a new AWS IAM access key: `aws iam create-access-key --user-name nbiot-e2e-pi`
-
-1. Create a [GitHub personal access token](https://github.com/settings/tokens/new) with «repo - Full control of private repositories» checked
-
-    This will only be used once, to add the pi's public ssh key as a deploy key to nbiot-e2e on GitHub Enterprise. This gives the pi access to clone and pull updates without using a persons ssh key.
-
 1. `cd _nbiot-e2e_/scripts`
 
-1. Replace the hostname number with the next unused number and insert keys (takes ~20 minutes)
+1. Run the setup script and follow instructions (takes ~20 minutes)
     
-        ssh pi@raspberrypi.local "NEWHOSTNAME=nbiot-e2e-XX \
-        SSM_ACT_CODE=_AWS activation code_ \
-        SSM_ACT_ID=_AWS activation ID_  \
-        AWS_ACCESS_KEY=_AWS access key_ \
-        AWS_SECRET_KEY=_AWS secret key_ \
-        GHE_TOKEN=_GitHub Enterprise Personal Access token_ \
-        ENABLE_ARDUINO=0 \
-        bash -s --" < setup_rpi.sh
+        ./run_setup_rpi.sh
     
 The pi should now be up and running the end to end test.
 
