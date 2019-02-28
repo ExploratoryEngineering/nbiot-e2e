@@ -1,0 +1,16 @@
+[Unit]
+Description=Raspberry PI Service
+After=network.target
+
+[Service]
+Environment="PATH=/usr/local/go/bin:/home/e2e/go/bin"
+ExecStart=/home/e2e/Arduino/nbiot-e2e/raspberrypi-service/raspberrypi-service
+WorkingDirectory=/home/e2e/Arduino/nbiot-e2e/raspberrypi-service
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+RestartSec=5
+User=e2e
+
+[Install]
+WantedBy=multi-user.target

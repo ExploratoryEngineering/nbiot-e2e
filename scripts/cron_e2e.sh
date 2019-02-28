@@ -6,16 +6,21 @@ set -euf -o pipefail
 # install new patches
 ~/Arduino/nbiot-e2e/scripts/patches/install_all.sh
 
-# build and restart arduino-service
 if [ -e ~/.arduino-config.json ]; then
+    # build and restart arduino-service
     cd ~/Arduino/nbiot-e2e/arduino-service
     /usr/local/go/bin/go build | ts
     git checkout -- ../go.sum # discard local modifications to go.sum
     echo restart arduino service | ts
     sudo systemctl stop arduino | ts
     sudo systemctl start arduino | ts
+else
+    # build and restart raspberrypi-service
+    cd ~/Arduino/nbiot-e2e/raspberrypi-service
+    /usr/local/go/bin/go build | ts
+    git checkout -- ../go.sum # discard local modifications to go.sum
+    echo restart raspberrypi service | ts
+    sudo systemctl stop raspberrypi | ts
+    sudo systemctl start raspberrypi | ts
 fi
 ) &>> ~/log/nbiot-e2e.log
-
-# dummy comment to trigger a new build
-

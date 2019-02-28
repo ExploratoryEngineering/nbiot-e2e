@@ -42,15 +42,13 @@ We use Raspberry Pis to run the end 2 end tests from different locations. The pl
 
 1. Connect the Raspberry Pi using Ethernet and power up
 
-1. ssh pi@raspberrypi.local (password is raspberry)
-
 1. `cd _nbiot-e2e_/scripts`
 
-1. Run the setup script and follow instructions (takes ~20 minutes)
+1. Run the setup script and follow the instructions.  You will be prompted for a password when the script tries to SSH to the Pi; the password is _raspberry_.
     
         ./run_setup_rpi.sh
-    
-The Pi should now be up and running the end to end test.
+
+The script takes about 20 minutes, after which the Pi should be up and running the end to end test.
 
 ## Remote access to the Pi
 
