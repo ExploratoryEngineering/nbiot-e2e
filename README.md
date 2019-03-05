@@ -57,9 +57,7 @@ The pi's are connected to AWS Systems Manager, so we can use Systems Manager to 
 ### Run single command on a nbiot-e2e pi
 
 1. `cd scripts/remote`
-1. List the managed instances: `aws ssm describe-instance-information`
-1. Copy the instance ID of the pi you want to connect to
-1. `INSTANCE_ID=_managed instance id_ ./exec.sh "echo This command will run on the pi, wait for execution to finish and output the response"`
+1. `./exec.sh nbiot-e2e-01 "echo This command will run on nbiot-e2e-01, wait for execution to finish and output the response"`
 
 ### Run single command on all the nbiot-e2e pis'
 
@@ -74,13 +72,18 @@ checks the Cloud Watch logs every second and prints the output.
 
 ### SSH into the pi
 
-1. If it's the first time, you need to get the pi's public ssh key and add it to the e2e server:
+1. On your computer `cd scripts/remote`
+1. If it's the first time, you need to get the pi's public ssh key and add it to the e2e server (replace XX with pi number):
 
-        `INSTANCE_ID=_managed instance id_ ./getsshpubkey.sh`
+        `./getsshpubkey.sh nbiot-e2e-XX`
 
-    Copy the value and add it to the end of `.ssh/authorized_keys` on the e2e server
-
-1. ssh to the e2e server
+1. Copy the STDOUT value
+1. ssh ubuntu@e2e.nbiot.engineering
+1. paste the public key you copied above to the end of `.ssh/authorized_keys`
+1. On your computer (still in scripts/remote): `./open-tunnel.sh nbiot-e2e-XX`
 1. ssh to the pi from the e2e server:
 
         ssh -o StrictHostKeyChecking=no -p 2222 e2e@localhost
+
+1. You should now be logged in as e2e on the pi
+1. When you're done (from your computer): `./close-tunnel.sh nbiot-e2e-XX`

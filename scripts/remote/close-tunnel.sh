@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./exec.sh "systemctl stop secure-tunnel"
+./exec.sh $1 "systemctl stop secure-tunnel"
