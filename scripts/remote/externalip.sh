@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./exec.sh "curl -s http://whatismyip.akamai.com/"
+./exec.sh $1 "curl -s http://whatismyip.akamai.com/"

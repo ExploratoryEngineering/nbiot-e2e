@@ -1,10 +1,41 @@
 #!/bin/bash -euf -o pipefail
 
-: ${INSTANCE_ID:?"Missing INSTANCE_ID environment variable"}
-CMD=$*
-echo "Command to execute: $CMD"
+echo "Usage: $0 [hostname] command"
 
-command_id=$(aws ssm send-command --instance-ids "${INSTANCE_ID}" --document-name "AWS-RunShellScript" --comment "check authorized_keys" --parameters commands="$CMD" --output json | jq -r '.Command.CommandId')
+if [ $# -lt 1 ]; then
+    echo "Not enough arguments"
+    exit 1
+fi
+
+INSTANCE_ID=${INSTANCE_ID:-}
+if [ ! -z "$INSTANCE_ID" ]; then
+    instance_arg="--instance-ids ${INSTANCE_ID}"
+else
+    instance_arg=""
+    pi=$1
+    shift
+fi
+
+if [[ $pi != nbiot-e2e-* ]]; then
+    echo "hostname has to be of form nbiot-e2e-XX"
+    exit 1
+fi
+
+if [ -z "$INSTANCE_ID" ]; then
+    INSTANCE_ID=$(aws ssm describe-instance-information --filters "Key=tag:Name,Values=${pi}" --max-items 1 | jq -r '.InstanceInformationList[0].InstanceId')
+fi
+
+cmd=$*
+if [ -z "$cmd" ]; then
+    echo "missing command argument"
+    exit 1
+fi
+
+echo "Command to execute: $cmd"
+
+tag_arg="--targets Key=tag:Name,Values=${pi}"
+
+command_id=$(aws ssm send-command ${instance_arg} ${tag_arg} --document-name "AWS-RunShellScript" --comment "exec.sh" --parameters commands="$cmd" --output json | jq -r '.Command.CommandId')
 echo $command_id
 while true; do
     response=$(aws ssm get-command-invocation --command-id "$command_id" --instance-id "$INSTANCE_ID")
