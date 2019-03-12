@@ -9,3 +9,6 @@ echo restart arduino service | ts
 sudo systemctl stop arduino | ts
 sudo systemctl start arduino | ts
 ) &>> ~/log/nbiot-e2e.log
+
+# dummy comment to trigger a new build
+
