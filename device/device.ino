@@ -111,7 +111,12 @@ void loop() {
 		Serial.println(F("sent message"));
 		++sequence;
 	} else {
-		Serial.println(F("failed to send"));
+		int errCode = nbiot.errorCode();
+		Serial.print(F("failed to send: "));
+		Serial.println(errCode, DEC);
+		TelenorNBIoT::registrationStatus_t status = nbiot.registrationStatus();
+		Serial.print(F("registration status: "));
+		Serial.println(status, DEC);
 	}
 	
 	rssi = nbiot.rssi();
