@@ -10,6 +10,8 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/telenordigital/nbiot-e2e/server/pb"
 	"github.com/telenordigital/nbiot-go"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 type Monitor struct {
@@ -24,6 +26,7 @@ type Monitor struct {
 }
 
 type deviceInfo struct {
+	name          string
 	inAlertState  bool
 	lastHeardFrom time.Time
 	sequence      uint32
@@ -31,6 +34,43 @@ type deviceInfo struct {
 	e2eHash       uint32
 	rssi          float32
 }
+
+var (
+	deviceCount = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "nbiot_e2e_device_count",
+		Help: "Number of e2e devices",
+	})
+
+	arduinoBuildInfo = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "nbiot_e2e_arduino_build_info",
+		Help: "Build info for the Arduino NBIoT library",
+	}, []string{"device_id", "device_name", "git_hash"})
+
+	e2eBuildInfo = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "nbiot_e2e_build_info",
+		Help: "Build info for the nbiot-e2e repository",
+	}, []string{"device_id", "device_name", "git_hash"})
+
+	receivedMessages = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "nbiot_e2e_received_messages_total",
+		Help: "The number of messages received from NB-IoT e2e devices. Partitioned by device id and name.",
+	}, []string{"device_id", "device_name"})
+
+	isUpGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "nbiot_e2e_up",
+		Help: "Set to 1 if the device is up. Changes to 0 if not heard from after configured inactivity timeout. Partitioned by device id and name.",
+	}, []string{"device_id", "device_name"})
+
+	droppedPackets = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "nbiot_e2e_dropped_packets_total",
+		Help: "The number of skipped sequence numbers. Partitioned by device id and name.",
+	}, []string{"device_id", "device_name"})
+
+	unmarshalErrors = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "nbiot_e2e_unmarshal_errors_total",
+		Help: "Number of errors when trying to unmarshal the payload from an e2e device. Partitioned by device id",
+	}, []string{"device_id", "device_name"})
+)
 
 func NewMonitor(collectionID string, inactivityTimeout time.Duration, mailer *Mailer, slackURL string) (*Monitor, error) {
 	client, err := nbiot.New()
@@ -93,6 +133,8 @@ func (m *Monitor) ReceiveDeviceMessages() {
 		var message pb.Message
 		if err := proto.Unmarshal(msg.Payload, &message); err != nil {
 			log.Println("Error:", err)
+			deviceID := *msg.Device.DeviceID
+			unmarshalErrors.WithLabelValues(deviceID, m.getDeviceName(deviceID)).Inc()
 			continue
 		}
 
@@ -111,21 +153,41 @@ func (m *Monitor) handlePingMessage(deviceID string, pm pb.PingMessage) {
 	info, deviceExists := m.deviceInfo[deviceID]
 	if !deviceExists {
 		info = &deviceInfo{}
+		info.name = m.getDeviceName(deviceID)
 		m.deviceInfo[deviceID] = info
+		
+		numDevices := len(m.deviceInfo)
+		deviceCount.Set(float64(numDevices))
+
+		droppedPackets.WithLabelValues(deviceID, info.name).Add(0)
 	}
 
 	info.inAlertState = false
+	isUpGauge.WithLabelValues(deviceID, info.name).Set(1)
 	info.lastHeardFrom = time.Now()
+
+	defer receivedMessages.WithLabelValues(deviceID, info.name).Inc()
+	e2eBuildInfo.WithLabelValues(deviceID, info.name, fmt.Sprintf("%07x", pm.E2EHash)).Set(1)
+	if info.e2eHash != 0 && pm.E2EHash != info.e2eHash {
+		e2eBuildInfo.WithLabelValues(deviceID, info.name, fmt.Sprintf("%07x", info.e2eHash)).Set(0)
+	}
+	arduinoBuildInfo.WithLabelValues(deviceID, info.name, fmt.Sprintf("%07x", pm.NbiotLibHash)).Set(1)
+	if info.nbiotLibHash != 0 && pm.NbiotLibHash != info.nbiotLibHash {
+		arduinoBuildInfo.WithLabelValues(deviceID, info.name, fmt.Sprintf("%07x", info.nbiotLibHash)).Set(0)
+		
+	}
 
 	if deviceExists {
 		if pm.Sequence < info.sequence {
 			log.Printf("Got a sequence number %d that is smaller than the previous %d. Device restarted?\n", pm.Sequence, info.sequence)
 		} else if pm.Sequence != info.sequence+1 {
 			go m.alert(deviceID, fmt.Sprintf("Expected sequence number %d but got %d", info.sequence+1, pm.Sequence), "")
+
+			droppedPackets.WithLabelValues(deviceID, info.name).Add(float64(pm.Sequence - info.sequence - 1))
 		}
 
 		if pm.E2EHash != info.e2eHash {
-			msg := fmt.Sprintf("New version of nbiot-e2e detected\nhttps://github.com/telenordigital/nbiot-e2e/commit/%07x\n", pm.E2EHash)
+			msg := fmt.Sprintf("New version of nbiot-e2e detected\nhttps://ghe.telenordigital.com/iot/nbiot-e2e/commit/%07x\n", pm.E2EHash)
 			log.Printf(msg)
 			m.slackInfo(msg)
 		}
@@ -154,6 +216,7 @@ func (m *Monitor) MonitorDevices() {
 			}
 			if time.Since(info.lastHeardFrom) > m.inactivityTimeout {
 				info.inAlertState = true
+				isUpGauge.WithLabelValues(id, info.name).Set(0)
 				body := fmt.Sprintf(
 					`Device info for last message from device:
 RSSI: %v dBm
@@ -165,6 +228,14 @@ nbiot-e2e commit: %x
 		}
 		m.mu.Unlock()
 	}
+}
+func (m *Monitor) getDeviceName(deviceID string) string {
+	device, err := m.nbiot.Device(m.collectionID, deviceID)
+	if err != nil {
+		log.Printf("Error: ", err)
+		return ""
+	}
+	return device.Tags["name"]
 }
 
 func (m *Monitor) alert(deviceID, subject, body string) {

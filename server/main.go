@@ -53,6 +53,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	newMetricsServer()
+
 	go m.MonitorDevices()
 
 	for {
