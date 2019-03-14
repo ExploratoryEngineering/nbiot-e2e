@@ -213,7 +213,10 @@ fi
 echo "add scripts to crontab that poll git repos for changes"
 # https://stackoverflow.com/questions/610839/how-can-i-programmatically-create-a-new-cron-job
 (crontab -l ; echo -e "* * * * *\t/home/e2e/Arduino/nbiot-e2e/scripts/cron_e2e.sh") | sort - | uniq - | crontab -
-(crontab -l ; echo -e "* * * * *\t/home/e2e/Arduino/nbiot-e2e/scripts/cron_arduino_nbiot.sh") | sort - | uniq - | crontab -
+
+if [ "$ENABLE_ARDUINO" = "1" ]; then
+    (crontab -l ; echo -e "* * * * *\t/home/e2e/Arduino/nbiot-e2e/scripts/cron_arduino_nbiot.sh") | sort - | uniq - | crontab -
+fi
 
 echo "install AWS CloudWatch agent"
 curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -o /tmp/awslogs-agent-setup.py
