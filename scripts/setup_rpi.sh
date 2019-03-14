@@ -189,24 +189,20 @@ git clone git@ghe.telenordigital.com:iot/nbiot-e2e.git
 echo "symlink the protobuf library into Arduino libraries"
 ln -s ~/Arduino/nbiot-e2e/pb/nanopb ~/Arduino/libraries
 
-echo "build the arduino service that compiles and uploads sketches to the board(s) connected"
-cd ~/Arduino/nbiot-e2e/arduino-service
-go build
-
-echo "copy standard config for arduino-service to home dir"
-cp ~/Arduino/nbiot-e2e/arduino-service/.arduino-config.json ~/
-# TODO remove sed-line after PR merge
-sed -i -e "s/pi/e2e/" ~/.arduino-config.json
-
 echo "make log directory"
 mkdir ~/log
 
-echo "install the arduino-service as a systemd service"
-sudo cp ~/Arduino/nbiot-e2e/arduino-service/arduino.service /etc/systemd/system/
-# TODO remove sed-line after PR merge
-sudo sed -i -e "s/pi/e2e/" /etc/systemd/system/arduino.service
-
 if [ "$ENABLE_ARDUINO" = "1" ]; then
+    echo "build the arduino service that compiles and uploads sketches to the board(s) connected"
+    cd ~/Arduino/nbiot-e2e/arduino-service
+    go build
+
+    echo "copy standard config for arduino-service to home dir"
+    cp ~/Arduino/nbiot-e2e/arduino-service/.arduino-config.json ~/
+
+    echo "install the arduino-service as a systemd service"
+    sudo cp ~/Arduino/nbiot-e2e/arduino-service/arduino.service /etc/systemd/system/
+
     echo "enable and start arduino service"
     sudo systemctl start arduino.service
     sudo systemctl enable arduino.service
