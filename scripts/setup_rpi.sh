@@ -53,7 +53,7 @@ echo "update apt"
 sudo apt-get update
 
 echo "upgrade apt packages"
-sudo apt-get dist-upgrade -y
+sudo apt-get dist-upgrade -y -f
 
 echo "install dependencies"
 sudo apt-get -y install unattended-upgrades apt-listchanges vim git moreutils jq python3 python3-pip
@@ -209,21 +209,6 @@ if [ "$ENABLE_ARDUINO" = "1" ]; then
     echo "enable and start arduino service"
     sudo systemctl start arduino.service
     sudo systemctl enable arduino.service
-else
-    echo "enabling raspberrypi service"
-
-    sudo ~/Arduino/nbiot-e2e/scripts/setup_rpi_serial.sh
-
-    echo "build the raspberrypi service"
-    cd ~/Arduino/nbiot-e2e/raspberrypi-service
-    go build
-
-    echo "install the raspberrypi-service as a systemd service"
-    sudo cp ~/Arduino/nbiot-e2e/raspberrypi-service/raspberrypi.service /etc/systemd/system/
-
-    echo "enable and start raspberrypi service"
-    sudo systemctl start raspberrypi.service
-    sudo systemctl enable raspberrypi.service
 fi
 
 echo "add scripts to crontab that poll git repos for changes"
@@ -306,6 +291,14 @@ datetime_format = %b %d %H:%M:%S
 file = /home/e2e/log/nbiot-e2e.log
 initial_position = start_of_file
 log_group_name = /home/e2e/log/nbiot-e2e.log
+buffer_duration = 5000
+log_stream_name = {hostname}
+
+[/home/e2e/log/nbiot-service.log]
+datetime_format = %b %d %H:%M:%S
+file = /home/e2e/log/nbiot-service.log
+initial_position = start_of_file
+log_group_name = /home/e2e/log/nbiot-service.log
 buffer_duration = 5000
 log_stream_name = {hostname}
 EOL

@@ -14,13 +14,9 @@ if [ -e ~/.arduino-config.json ]; then
     echo restart arduino service | ts
     sudo systemctl stop arduino | ts
     sudo systemctl start arduino | ts
-else
-    # build and restart raspberrypi-service
-    cd ~/Arduino/nbiot-e2e/raspberrypi-service
-    /usr/local/go/bin/go build | ts
-    git checkout -- ../go.sum # discard local modifications to go.sum
-    echo restart raspberrypi service | ts
-    sudo systemctl stop raspberrypi | ts
-    sudo systemctl start raspberrypi | ts
 fi
+
+# restart nbiot-service
+echo restart nbiot service | ts
+sudo systemctl restart nbiot | ts
 ) &>> ~/log/nbiot-e2e.log

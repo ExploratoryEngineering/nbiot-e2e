@@ -5,18 +5,24 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/telenordigital/nbiot-e2e/nbiot-service/serial"
 	"github.com/telenordigital/nbiot-e2e/server/pb"
-	"gopkg.in/src-d/go-git.v4"
 
-	"github.com/telenordigital/nbiot-e2e/raspberrypi-service/serial"
+	"github.com/golang/protobuf/proto"
+	"gopkg.in/src-d/go-git.v4"
 )
 
 func main() {
+	logFile, err := os.OpenFile("/home/e2e/log/nbiot-service.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal("Unable to open log file:", err)
+	}
+	log.SetOutput(logFile)
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 
 	var (
@@ -117,13 +123,13 @@ func signalStrength(s *serial.SerialConnection) float32 {
 		return 99
 	}
 
-	rssi, err := strconv.ParseFloat(strings.Split(strings.Split(urc[0], " ")[1], ",")[0], 32)
+	signalPower, err := strconv.ParseFloat(strings.Split(strings.Split(urc[0], " ")[1], ",")[0], 32)
 	if err != nil {
-		log.Println("Error:, err")
+		log.Println("Error:", err)
 		return 99
 	}
 
-	return float32(rssi)
+	return float32(2*signalPower - 113)
 }
 
 func setUpModule(s *serial.SerialConnection) bool {
