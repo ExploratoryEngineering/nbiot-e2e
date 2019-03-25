@@ -8,10 +8,10 @@ import (
 
 	"github.com/ashwanthkumar/slack-go-webhook"
 	"github.com/golang/protobuf/proto"
-	"github.com/telenordigital/nbiot-e2e/server/pb"
-	"github.com/telenordigital/nbiot-go"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/telenordigital/nbiot-e2e/server/pb"
+	"github.com/telenordigital/nbiot-go"
 )
 
 type Monitor struct {
@@ -64,6 +64,11 @@ var (
 	droppedPackets = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "nbiot_e2e_dropped_packets_total",
 		Help: "The number of skipped sequence numbers. Partitioned by device id and name.",
+	}, []string{"device_id", "device_name"})
+
+	duplicatePackets = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "nbiot_e2e_duplicate_packets_total",
+		Help: "The number of repeated sequence numbers. Partitioned by device id and name.",
 	}, []string{"device_id", "device_name"})
 
 	unmarshalErrors = promauto.NewCounterVec(prometheus.CounterOpts{
@@ -155,11 +160,12 @@ func (m *Monitor) handlePingMessage(deviceID string, pm pb.PingMessage) {
 		info = &deviceInfo{}
 		info.name = m.getDeviceName(deviceID)
 		m.deviceInfo[deviceID] = info
-		
+
 		numDevices := len(m.deviceInfo)
 		deviceCount.Set(float64(numDevices))
 
 		droppedPackets.WithLabelValues(deviceID, info.name).Add(0)
+		duplicatePackets.WithLabelValues(deviceID, info.name).Add(0)
 	}
 
 	info.inAlertState = false
@@ -174,15 +180,15 @@ func (m *Monitor) handlePingMessage(deviceID string, pm pb.PingMessage) {
 	arduinoBuildInfo.WithLabelValues(deviceID, info.name, fmt.Sprintf("%07x", pm.NbiotLibHash)).Set(1)
 	if info.nbiotLibHash != 0 && pm.NbiotLibHash != info.nbiotLibHash {
 		arduinoBuildInfo.WithLabelValues(deviceID, info.name, fmt.Sprintf("%07x", info.nbiotLibHash)).Set(0)
-		
+
 	}
 
 	if deviceExists {
 		if pm.Sequence < info.sequence {
 			log.Printf("Got a sequence number %d that is smaller than the previous %d. Device restarted?\n", pm.Sequence, info.sequence)
-		} else if pm.Sequence != info.sequence+1 {
-			go m.alert(deviceID, fmt.Sprintf("Expected sequence number %d but got %d", info.sequence+1, pm.Sequence), "")
-
+		} else if pm.Sequence == info.sequence {
+			duplicatePackets.WithLabelValues(deviceID, info.name).Inc()
+		} else if pm.Sequence > info.sequence+1 {
 			droppedPackets.WithLabelValues(deviceID, info.name).Add(float64(pm.Sequence - info.sequence - 1))
 		}
 
