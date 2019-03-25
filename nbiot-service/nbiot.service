@@ -3,7 +3,7 @@ Description=NB-IoT Service
 After=network.target
 
 [Service]
-Environment="PATH=/usr/local/go/bin:/home/e2e/go/bin"
+Environment="PATH=/usr/bin:/usr/local/go/bin"
 ExecStart=/home/e2e/Arduino/nbiot-e2e/nbiot-service/run.sh
 WorkingDirectory=/home/e2e/Arduino/nbiot-e2e/nbiot-service
 StandardOutput=inherit
