@@ -12,11 +12,14 @@ if [ -e ~/.arduino-config.json ]; then
     /usr/local/go/bin/go build | ts
     git checkout -- ../go.sum # discard local modifications to go.sum
     echo restart arduino service | ts
-    sudo systemctl stop arduino | ts
-    sudo systemctl start arduino | ts
+	sudo cp ~/Arduino/nbiot-e2e/arduino-service/arduino.service /etc/systemd/system/
+    sudo systemctl daemon-reload | ts
+    sudo systemctl restart arduino | ts
 fi
 
 # restart nbiot-service
 echo restart nbiot service | ts
+sudo cp ~/Arduino/nbiot-e2e/nbiot-service/nbiot.service /etc/systemd/system/
+sudo systemctl daemon-reload | ts
 sudo systemctl restart nbiot | ts
 ) &>> ~/log/nbiot-e2e.log
