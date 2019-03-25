@@ -23,3 +23,4 @@ sudo cp ~/Arduino/nbiot-e2e/nbiot-service/nbiot.service /etc/systemd/system/
 sudo systemctl daemon-reload | ts
 sudo systemctl restart nbiot | ts
 ) &>> ~/log/nbiot-e2e.log
+
