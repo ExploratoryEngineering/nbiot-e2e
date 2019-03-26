@@ -53,7 +53,7 @@ echo "update apt"
 sudo apt-get update
 
 echo "upgrade apt packages"
-sudo apt-get dist-upgrade -y
+sudo apt-get dist-upgrade -y -f
 
 echo "install dependencies"
 sudo apt-get -y install unattended-upgrades apt-listchanges vim git moreutils jq python3 python3-pip
@@ -182,6 +182,7 @@ SSH_KEY=$(cat ~/.ssh/id_rsa.pub)
 curl -sS -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${GHE_TOKEN}" --data '{"title":"'"${NEWHOSTNAME}"'","read_only":"true","key":"'"${SSH_KEY}"'"}' https://ghe.telenordigital.com/api/v3/repos/iot/nbiot-e2e/keys
 
 echo "download nbiot e2e project"
+mkdir ~/Arduino
 cd ~/Arduino/
 ssh-keyscan ghe.telenordigital.com >> ~/.ssh/known_hosts
 git clone git@ghe.telenordigital.com:iot/nbiot-e2e.git
@@ -329,3 +330,6 @@ sudo systemctl daemon-reload
 
 echo "delete pi user"
 nohup sleep 5 && sudo deluser -remove-home pi &
+
+echo "install patches"
+~/Arduino/nbiot-e2e/scripts/patches/install_all.sh
