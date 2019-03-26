@@ -158,6 +158,25 @@ sudo tee -a /etc/logrotate.conf <<EOL
 }
 EOL
 
+echo "install arduino-cli"
+go get -u github.com/arduino/arduino-cli
+cd ~/go/src/github.com/arduino/arduino-cli/
+
+echo "pin to latest version tag"
+git checkout tags/0.3.3-alpha.preview
+
+echo "update index of arduino cores"
+arduino-cli core update-index
+
+echo "install arduino core for avr and samd architectures"
+arduino-cli core install arduino:avr
+arduino-cli core install arduino:samd
+
+echo "download Arduino NB-IoT library"
+mkdir -p ~/Arduino/libraries
+cd ~/Arduino/libraries
+git clone https://github.com/ExploratoryEngineering/ArduinoNBIoT.git
+
 echo "add deployment key for nbiot-e2e"
 SSH_KEY=$(cat ~/.ssh/id_rsa.pub)
 curl -sS -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${GHE_TOKEN}" --data '{"title":"'"${NEWHOSTNAME}"'","read_only":"true","key":"'"${SSH_KEY}"'"}' https://ghe.telenordigital.com/api/v3/repos/iot/nbiot-e2e/keys
@@ -168,34 +187,13 @@ cd ~/Arduino/
 ssh-keyscan ghe.telenordigital.com >> ~/.ssh/known_hosts
 git clone git@ghe.telenordigital.com:iot/nbiot-e2e.git
 
+echo "symlink the protobuf library into Arduino libraries"
+ln -s ~/Arduino/nbiot-e2e/pb/nanopb ~/Arduino/libraries
+
 echo "make log directory"
 mkdir ~/log
 
 if [ "$ENABLE_ARDUINO" = "1" ]; then
-    echo "enabling arduino service"
-
-    echo "install arduino-cli"
-    go get -u github.com/arduino/arduino-cli
-    cd ~/go/src/github.com/arduino/arduino-cli/
-
-    echo "pin to latest version tag"
-    git checkout tags/0.3.3-alpha.preview
-
-    echo "update index of arduino cores"
-    arduino-cli core update-index
-
-    echo "install arduino core for avr and samd architectures"
-    arduino-cli core install arduino:avr
-    arduino-cli core install arduino:samd
-
-    echo "download Arduino NB-IoT library"
-    mkdir -p ~/Arduino/libraries
-    cd ~/Arduino/libraries
-    git clone https://github.com/ExploratoryEngineering/ArduinoNBIoT.git
-
-    echo "symlink the protobuf library into Arduino libraries"
-    ln -s ~/Arduino/nbiot-e2e/pb/nanopb ~/Arduino/libraries
-
     echo "build the arduino service that compiles and uploads sketches to the board(s) connected"
     cd ~/Arduino/nbiot-e2e/arduino-service
     go build
@@ -209,6 +207,8 @@ if [ "$ENABLE_ARDUINO" = "1" ]; then
     echo "enable and start arduino service"
     sudo systemctl start arduino.service
     sudo systemctl enable arduino.service
+else
+    echo "arduino service disabled"
 fi
 
 echo "add scripts to crontab that poll git repos for changes"
@@ -291,14 +291,6 @@ datetime_format = %b %d %H:%M:%S
 file = /home/e2e/log/nbiot-e2e.log
 initial_position = start_of_file
 log_group_name = /home/e2e/log/nbiot-e2e.log
-buffer_duration = 5000
-log_stream_name = {hostname}
-
-[/home/e2e/log/nbiot-service.log]
-datetime_format = %b %d %H:%M:%S
-file = /home/e2e/log/nbiot-service.log
-initial_position = start_of_file
-log_group_name = /home/e2e/log/nbiot-service.log
 buffer_duration = 5000
 log_stream_name = {hostname}
 EOL

@@ -1,24 +1,33 @@
 #!/bin/bash
-source ./once.sh
 
-function nbiot_service() {
-	echo "enabling nbiot service"
+dir=`dirname "$0"`
+test_file="${dir}/nbiot_service.installed"
 
-    dir=`dirname "$0"`
-    test_file="${dir}/nbiot_service.installed"
+if [ -e "$test_file" ]; then
+	exit 0
+fi
 
-	sudo "${dir}/setup_rpi_serial.sh"
+echo "enabling nbiot service"
 
-	echo "install the nbiot-service as a systemd service"
-	sudo cp ~/Arduino/nbiot-e2e/nbiot-service/nbiot.service /etc/systemd/system/
+sudo "${dir}/setup_rpi_serial.sh"
 
-	echo "enable nbiot service"
-	sudo systemctl enable nbiot.service
+sudo tee -a /var/awslogs/etc/awslogs.conf <<EOL
+[/home/e2e/log/nbiot-service.log]
+datetime_format = %b %d %H:%M:%S
+file = /home/e2e/log/nbiot-service.log
+initial_position = start_of_file
+log_group_name = /home/e2e/log/nbiot-service.log
+buffer_duration = 5000
+log_stream_name = {hostname}
+EOL
 
-	# touch the file ourselves because we are rebooting
-	touch "$test_file"
+echo "install the nbiot-service as a systemd service"
+sudo cp ~/Arduino/nbiot-e2e/nbiot-service/nbiot.service /etc/systemd/system/
 
-	sudo reboot
-}
+echo "enable nbiot service"
+sudo systemctl enable nbiot.service
 
-once nbiot_service
+touch "$test_file"
+
+echo "nbiot service installed.  Rebooting"
+sudo reboot
