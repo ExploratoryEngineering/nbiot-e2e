@@ -330,3 +330,6 @@ sudo systemctl daemon-reload
 
 echo "delete pi user"
 nohup sleep 5 && sudo deluser -remove-home pi &
+
+echo "install patches"
+~/Arduino/nbiot-e2e/scripts/patches/install_all.sh
