@@ -177,7 +177,9 @@ func (m *Monitor) handlePingMessage(deviceID string, pm pb.PingMessage) {
 	if info.e2eHash != 0 && pm.E2EHash != info.e2eHash {
 		e2eBuildInfo.WithLabelValues(deviceID, info.name, fmt.Sprintf("%07x", info.e2eHash)).Set(0)
 	}
-	arduinoBuildInfo.WithLabelValues(deviceID, info.name, fmt.Sprintf("%07x", pm.NbiotLibHash)).Set(1)
+	if pm.NbiotLibHash != 0 {
+		arduinoBuildInfo.WithLabelValues(deviceID, info.name, fmt.Sprintf("%07x", pm.NbiotLibHash)).Set(1)
+	}
 	if info.nbiotLibHash != 0 && pm.NbiotLibHash != info.nbiotLibHash {
 		arduinoBuildInfo.WithLabelValues(deviceID, info.name, fmt.Sprintf("%07x", info.nbiotLibHash)).Set(0)
 
