@@ -49,7 +49,7 @@ func main() {
 
 	for attempts := 0; !waitForDeviceOnline(serialConn); attempts++ {
 		if attempts < 180 {
-			log.Println("RSSI: ", signalStrength(serialConn))
+			printRSSI(signalStrength(serialConn))
 			time.Sleep(time.Second)
 		}
 	}
@@ -84,7 +84,7 @@ func main() {
 
 		sequence++
 		rssi = signalStrength(serialConn)
-		log.Println("signal strength:", rssi)
+		printRSSI(rssi)
 		time.Sleep(time.Minute)
 	}
 }
@@ -134,6 +134,14 @@ func signalStrength(s *serial.SerialConnection) float32 {
 	}
 
 	return float32(2*signalPower - 113)
+}
+
+func printRSSI(rssi float32) {
+	if rssi == 99 {
+		log.Println("RSSI unknown")
+	} else {
+		log.Println("RSSI: ", rssi)
+	}
 }
 
 func setUpModule(s *serial.SerialConnection) bool {
