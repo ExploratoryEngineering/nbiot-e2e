@@ -6,7 +6,7 @@ The `cron_e2e.sh` is run every minute on the pis', and will run the `install_all
 
 **Warning!** Do _not_ modify a patch that is already pushed to master and installed on the pis'. That will cause chaos. Create a new patch file instead. If the installation fails, the `.installed` file will not be created. Then you can modify the patch, but be aware that some parts of the script may have completed already. So be sure you know what you're doing.
 
-**Another warning!** Do _not_ reboot or exit inside the function. If something went wrong, return an error code (`return` without arguments will pass the error of the previous command). Instead of rebooting, restart the related services. If you absolutely have to reboot - use the remote exec feature instead to manually trigger a reboot. But make sure the `scripts/cron_e2e.sh` script has finished completely first.
+**Another warning!** Try to avoid rebooting or exiting inside the function. If something went wrong, return an error code (`return` without arguments will pass the error of the previous command). Instead of rebooting, restart the related services. A patch that reboots will cause any remaining patches not to be installed until the next time master is updated.  This isn't an issue for running devices when we add patches one at a time, but it will be an issue when we create new devices, because they need to install all patches.  Consider augmenting the patch system to interpret a particular exit code as "needs reboot", and let the patch system do the reboot after all patches have been installed.
 
 ## Creating a patch file
 

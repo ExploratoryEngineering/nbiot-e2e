@@ -129,6 +129,10 @@ func signalStrength(s *serial.SerialConnection) float32 {
 		return 99
 	}
 
+	if signalPower == 99 {
+		return 99
+	}
+
 	return float32(2*signalPower - 113)
 }
 
