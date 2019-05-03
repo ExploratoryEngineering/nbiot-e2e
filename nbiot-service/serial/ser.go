@@ -75,25 +75,29 @@ func (s *SerialConnection) splitURCResponse(cmds []string, err error) ([]string,
 func (s *SerialConnection) scanResponse() ([]string, []string, error) {
 	var data []string
 
-	for s.scanner.Scan() {
-		line := s.scanner.Text()
+	// The scanner's ReadTimeout seems ineffective, so we take matters into our own hands.
+	for deadline := time.Now().Add(time.Second); time.Now().Before(deadline); {
+		for s.scanner.Scan() {
+			line := s.scanner.Text()
 
-		if line == "OK" {
-			return s.splitURCResponse(data[1:], nil)
+			if line == "OK" {
+				return s.splitURCResponse(data[1:], nil)
+			}
+
+			if line == "ERROR" {
+				return s.splitURCResponse(data, fmt.Errorf("ERROR: '%v'", data))
+			}
+
+			if line == "ABORT" {
+				return s.splitURCResponse(data, fmt.Errorf("ABORT: '%v'", data))
+			}
+			data = append(data, line)
+		}
+		if err := s.scanner.Err(); err != nil {
+			return nil, nil, err
 		}
 
-		if line == "ERROR" {
-			return s.splitURCResponse(data, fmt.Errorf("ERROR: '%v'", data))
-		}
-
-		if line == "ABORT" {
-			return s.splitURCResponse(data, fmt.Errorf("ABORT: '%v'", data))
-		}
-		data = append(data, line)
-	}
-
-	if err := s.scanner.Err(); err != nil {
-		return nil, nil, err
+		time.Sleep(100 * time.Millisecond)
 	}
 
 	return s.splitURCResponse(data, fmt.Errorf("Invalid response: '%v'", data))
