@@ -48,7 +48,7 @@ func (s *SerialConnection) SendAndReceive(cmd string) ([]string, []string, error
 		return nil, nil, err
 	}
 
-	return s.scanResponse(s.scanner)
+	return s.scanResponse()
 }
 
 // Close closes the serial connection
@@ -72,11 +72,11 @@ func (s *SerialConnection) splitURCResponse(cmds []string, err error) ([]string,
 	return data, urcs, err
 }
 
-func (s *SerialConnection) scanResponse(scanner *bufio.Scanner) ([]string, []string, error) {
+func (s *SerialConnection) scanResponse() ([]string, []string, error) {
 	var data []string
 
 	for s.scanner.Scan() {
-		line := scanner.Text()
+		line := s.scanner.Text()
 
 		if line == "OK" {
 			return s.splitURCResponse(data[1:], nil)
@@ -90,6 +90,10 @@ func (s *SerialConnection) scanResponse(scanner *bufio.Scanner) ([]string, []str
 			return s.splitURCResponse(data, fmt.Errorf("ABORT: '%v'", data))
 		}
 		data = append(data, line)
+	}
+
+	if err := s.scanner.Err(); err != nil {
+		return nil, nil, err
 	}
 
 	return s.splitURCResponse(data, fmt.Errorf("Invalid response: '%v'", data))
@@ -117,4 +121,3 @@ func scanCRLF(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	// Request more data.
 	return 0, nil, nil
 }
-
