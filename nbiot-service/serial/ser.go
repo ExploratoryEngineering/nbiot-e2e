@@ -2,7 +2,9 @@ package serial
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"strings"
 	"time"
@@ -15,6 +17,7 @@ type SerialConnection struct {
 	serialPort *serial.Port
 	scanner    *bufio.Scanner
 	verbose    bool
+	serialRead *bytes.Buffer
 }
 
 // NewSerialConnection creates a new SerialConnection
@@ -27,6 +30,16 @@ func NewSerialConnection(device string, baud int, verbose bool) (*SerialConnecti
 
 	// Wrap serial connection in scanner
 	scanner := bufio.NewScanner(s)
+	if verbose {
+		serialRead := bytes.NewBuffer(nil)
+		scanner = bufio.NewScanner(io.TeeReader(s, serialRead))
+		return &SerialConnection{
+			serialPort: s,
+			scanner:    scanner,
+			verbose:    verbose,
+			serialRead: serialRead,
+		}, nil
+	}
 
 	return &SerialConnection{
 		serialPort: s,
@@ -46,7 +59,12 @@ func (s *SerialConnection) SendAndReceive(cmd string) ([]string, []string, error
 		return nil, nil, err
 	}
 
-	return s.scanResponse()
+	data, urcs, err := s.scanResponse()
+	if s.verbose {
+		log.Printf("<-- %s", s.serialRead.String())
+		s.serialRead.Reset()
+	}
+	return data, urcs, err
 }
 
 // Close closes the serial connection
