@@ -28,7 +28,7 @@ func NewSerialConnection(device string, baud int, verbose bool) (*SerialConnecti
 
 	// Wrap serial connection in scanner
 	scanner := bufio.NewScanner(s)
-	scanner.Split(scanCRLF)
+	// scanner.Split(scanCRLF)
 
 	return &SerialConnection{
 		serialPort: s,
