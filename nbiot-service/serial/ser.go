@@ -92,7 +92,7 @@ func (s *SerialConnection) scanResponse() ([]string, []string, error) {
 	var data []string
 
 	// The scanner's ReadTimeout seems ineffective, so we take matters into our own hands.
-	for deadline := time.Now().Add(time.Second); time.Now().Before(deadline); {
+	for deadline := time.Now().Add(5 * time.Second); time.Now().Before(deadline); {
 		for s.scanner.Scan() {
 			line := s.scanner.Text()
 
