@@ -35,11 +35,18 @@ func main() {
 	e2eHash := gitHash("/home/e2e/Arduino/nbiot-e2e")
 	log.Printf("nbiot-e2e git commit: %07x", e2eHash)
 
-	serialConn := openSerialConnection(*device, *baud, *verbose)
+	for {
+		run(*device, *baud, *verbose, e2eHash)
+		time.Sleep(30 * time.Second)
+	}
+}
+
+func run(device string, baud int, verbose bool, e2eHash uint32) {
+	serialConn := openSerialConnection(device, baud, verbose)
 	defer serialConn.Close()
 
-	for !setUpModule(serialConn) {
-		time.Sleep(time.Second * 5)
+	if !setUpModule(serialConn) {
+		return
 	}
 
 	printIMSI(serialConn)
@@ -78,8 +85,7 @@ func main() {
 		}
 
 		if !sendPacket(serialConn, b) {
-			time.Sleep(time.Minute)
-			continue
+			return
 		}
 
 		sequence++
