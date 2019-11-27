@@ -48,7 +48,7 @@ func main() {
 		mailer = NewMailer(opts.DKIMPrivateKey)
 	}
 
-	m, err := NewMonitor(opts.CollectionID, 5*time.Minute, mailer, slackWebhookURL)
+	m, err := NewMonitor(opts.CollectionID, opts.InactivityTimeout, mailer, slackWebhookURL)
 	if err != nil {
 		log.Fatal(err)
 	}
