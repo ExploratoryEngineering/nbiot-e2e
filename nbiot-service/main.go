@@ -80,7 +80,7 @@ func run(device string, baud int, verbose bool, e2eHash uint32) {
 		b, err := proto.Marshal(msg)
 		if err != nil {
 			log.Println("Error marshaling:", err)
-			time.Sleep(time.Minute)
+			time.Sleep(5 * time.Minute)
 			continue
 		}
 
@@ -91,7 +91,7 @@ func run(device string, baud int, verbose bool, e2eHash uint32) {
 		sequence++
 		rssi = signalStrength(serialConn)
 		printRSSI(rssi)
-		time.Sleep(time.Minute)
+		time.Sleep(5 * time.Minute)
 	}
 }
 
