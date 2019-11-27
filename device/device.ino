@@ -121,7 +121,7 @@ void loop() {
 	
 	rssi = nbiot.rssi();
 	printSignalStrength(rssi);
-	delay(5*60000);
+	delay(60000);
 }
 
 bool send(nbiot_e2e_Message* msg) {
